@@ -97,5 +97,37 @@ namespace PracticaWebApi.Controllers
 
             return Ok(autor);
         }
+
+        [HttpGet]
+        [Route("VerificarAutorTieneLibros/{autorId}")]
+        public IActionResult VerificarAutorTieneLibros(int autorId)
+        {
+            bool tieneLibros = _bibliotecaContext.libro.Any(l => l.autor_id == autorId);
+
+            return Ok(new { AutorId = autorId, TieneLibros = tieneLibros });
+        }
+
+        [HttpGet]
+        [Route("GetPrimerLibroAutor/{autorId}")]
+        public IActionResult GetPrimerLibroAutor(int autorId)
+        {
+            var primerLibro = _bibliotecaContext.libro
+                .Where(l => l.autor_id == autorId)
+                .OrderBy(l => l.anio_publicacion)
+                .Select(l => new
+                {
+                    l.id_libro,
+                    l.titulo,
+                    l.anio_publicacion
+                })
+                .FirstOrDefault();
+
+            if (primerLibro == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(primerLibro);
+        }
     }
 }

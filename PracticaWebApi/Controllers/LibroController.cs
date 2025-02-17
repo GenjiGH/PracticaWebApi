@@ -100,5 +100,62 @@ namespace PracticaWebApi.Controllers
 
             return Ok(libro);
         }
+
+        [HttpGet]
+        [Route("GetAutoresMasLibros")]
+        public IActionResult GetAutoresMasLibros()
+        {
+            var autores = _bibliotecaContext.libro
+                .GroupBy(l => l.autor_id)
+                .Select(g => new
+                {
+                    AutorId = g.Key,
+                    Nombre = _bibliotecaContext.autor.Where(a => a.id_autor == g.Key).Select(a => a.nombre).FirstOrDefault(),
+                    CantidadLibros = g.Count()
+                })
+                .OrderByDescending(a => a.CantidadLibros)
+                .ToList();
+
+            return Ok(autores);
+        }
+
+        [HttpGet]
+        [Route("GetLibrosMasRecientes")]
+        public IActionResult GetLibrosMasRecientes()
+        {
+            var libros = _bibliotecaContext.libro
+                .OrderByDescending(l => l.anio_publicacion)
+                .Take(3) 
+                .Select(l => new
+                {
+                    l.id_libro,
+                    l.titulo,
+                    l.anio_publicacion,
+                    AutorNombre = _bibliotecaContext.autor.Where(a => a.id_autor == l.autor_id).Select(a => a.nombre).FirstOrDefault()
+                })
+                .ToList();
+
+            return Ok(libros);
+        }
+
+
+        [HttpGet]
+        [Route("GetTotalLibrosPorAnio")]
+        public IActionResult GetTotalLibrosPorAnio()
+        {
+            var librosPorAnio = _bibliotecaContext.libro
+                .GroupBy(l => l.anio_publicacion)
+                .Select(g => new
+                {
+                    Anio = g.Key,
+                    TotalLibros = g.Count()
+                })
+                .OrderByDescending(g => g.Anio)
+                .ToList();
+
+            return Ok(librosPorAnio);
+        }
+
+
     }
 }
